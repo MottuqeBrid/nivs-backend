@@ -4,6 +4,28 @@ import User from "../model/user.model.js";
 import Upload from "../model/upload.model.js";
 const router = express.Router();
 
+// Get all uploads and populate them by user ID (admin only)
+router.get("/uploads", adminMiddleware, async (req, res) => {
+  try {
+    const upload = await Upload.find().populate("user", "-password");
+    if (!upload) {
+      return res.status(404).json({
+        success: false,
+        message: "Uploads not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: upload,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
 // Get all users (admin only)
 router.get("/", adminMiddleware, async (req, res) => {
   try {
@@ -12,60 +34,6 @@ router.get("/", adminMiddleware, async (req, res) => {
     return res.json({
       success: true,
       data: users,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-});
-
-// Delete a user by ID (admin only)
-router.delete("/:id", adminMiddleware, async (req, res) => {
-  try {
-    const userId = req.params.id;
-    // Delete the user from the database
-    const deletedUser = await User.findByIdAndUpdate(userId, {
-      isDeleted: true,
-    });
-    if (!deletedUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-    return res.json({
-      success: true,
-      message: "User deleted successfully",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-});
-
-// Update a user's information by ID (admin only)
-router.patch("/:id", adminMiddleware, async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const updatedData = req.body;
-    // Update the user in the database
-    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
-      new: true,
-    }).select("-password");
-    if (!updatedUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-    return res.json({
-      success: true,
-      message: "User updated successfully",
-      data: updatedUser,
     });
   } catch (error) {
     return res.status(500).json({
@@ -196,20 +164,23 @@ router.get("/:id/files", adminMiddleware, async (req, res) => {
     });
   }
 });
-
-// Get all uploads and populate them by user ID (admin only)
-router.get("/uploads", adminMiddleware, async (req, res) => {
+// Delete a user by ID (admin only)
+router.delete("/:id", adminMiddleware, async (req, res) => {
   try {
-    const upload = await Upload.find().populate("user", "-password");
-    if (!upload) {
+    const userId = req.params.id;
+    // Delete the user from the database
+    const deletedUser = await User.findByIdAndUpdate(userId, {
+      isDeleted: true,
+    });
+    if (!deletedUser) {
       return res.status(404).json({
         success: false,
-        message: "Uploads not found",
+        message: "User not found",
       });
     }
-    return res.status(200).json({
+    return res.json({
       success: true,
-      data: upload,
+      message: "User deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({
@@ -218,4 +189,33 @@ router.get("/uploads", adminMiddleware, async (req, res) => {
     });
   }
 });
+
+// Update a user's information by ID (admin only)
+router.patch("/:id", adminMiddleware, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const updatedData = req.body;
+    // Update the user in the database
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
+      new: true,
+    }).select("-password");
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    return res.json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
 export default router;
