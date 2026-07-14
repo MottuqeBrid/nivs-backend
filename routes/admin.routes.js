@@ -2,7 +2,58 @@ import express from "express";
 import adminMiddleware from "../middleware/admin.middleware.js";
 import User from "../model/user.model.js";
 import Upload from "../model/upload.model.js";
+import Image from "../model/image.model.js";
+import Video from "../model/video.model.js";
+import File from "../model/file.model.js";
 const router = express.Router();
+
+// get all images by admin
+router.get("/all-images", adminMiddleware, async (req, res) => {
+  try {
+    const images = await Image.find().populate("user", "-password");
+    return res.json({
+      success: true,
+      data: images,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
+// get all videos by admin
+router.get("/all-videos", adminMiddleware, async (req, res) => {
+  try {
+    const videos = await Video.find().populate("user", "-password");
+    return res.json({
+      success: true,
+      data: videos,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
+// get all files by admin
+router.get("/all-files", adminMiddleware, async (req, res) => {
+  try {
+    const files = await File.find().populate("user", "-password");
+    return res.json({
+      success: true,
+      data: files,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
 
 // Get all uploads and populate them by user ID (admin only)
 router.get("/uploads", adminMiddleware, async (req, res) => {
