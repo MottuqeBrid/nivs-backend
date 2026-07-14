@@ -5,6 +5,7 @@ import Upload from "../model/upload.model.js";
 import Image from "../model/image.model.js";
 import Video from "../model/video.model.js";
 import File from "../model/file.model.js";
+import Note from "../model/note.model.js";
 const router = express.Router();
 
 // get all images by admin
@@ -105,13 +106,13 @@ router.get("/:id", adminMiddleware, async (req, res) => {
         message: "User not found",
       });
     }
-    await user.populate("notes");
-    await user.populate("images");
-    await user.populate("videos");
-    await user.populate("files");
+    const notes = await Note.find({ user: userId });
+    const images = await Image.find({ user: userId });
+    const videos = await Video.find({ user: userId });
+    const files = await File.find({ user: userId });
     return res.json({
       success: true,
-      data: user,
+      data: { ...user._doc, notes, images, videos, files },
     });
   } catch (error) {
     return res.status(500).json({
@@ -125,18 +126,17 @@ router.get("/:id", adminMiddleware, async (req, res) => {
 router.get("/:id/notes", adminMiddleware, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId)
-      .populate("notes")
-      .select("-password");
-    if (!user) {
+    const notes = await Note.find({ user: userId });
+
+    if (!notes) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "Notes not found",
       });
     }
     return res.json({
       success: true,
-      data: user.notes,
+      data: notes,
     });
   } catch (error) {
     return res.status(500).json({
@@ -150,18 +150,16 @@ router.get("/:id/notes", adminMiddleware, async (req, res) => {
 router.get("/:id/images", adminMiddleware, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId)
-      .populate("images")
-      .select("-password");
-    if (!user) {
+    const images = await Image.find({ user: userId });
+    if (!images) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "Images not found",
       });
     }
     return res.json({
       success: true,
-      data: user.images,
+      data: images,
     });
   } catch (error) {
     return res.status(500).json({
@@ -175,18 +173,16 @@ router.get("/:id/images", adminMiddleware, async (req, res) => {
 router.get("/:id/videos", adminMiddleware, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId)
-      .populate("videos")
-      .select("-password");
-    if (!user) {
+    const videos = await Video.find({ user: userId });
+    if (!videos) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "Videos not found",
       });
     }
     return res.json({
       success: true,
-      data: user.videos,
+      data: videos,
     });
   } catch (error) {
     return res.status(500).json({
@@ -200,18 +196,16 @@ router.get("/:id/videos", adminMiddleware, async (req, res) => {
 router.get("/:id/files", adminMiddleware, async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId)
-      .populate("files")
-      .select("-password");
-    if (!user) {
+    const files = await File.find({ user: userId });
+    if (!files) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "Files not found",
       });
     }
     return res.json({
       success: true,
-      data: user.files,
+      data: files,
     });
   } catch (error) {
     return res.status(500).json({
