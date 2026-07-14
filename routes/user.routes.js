@@ -81,7 +81,7 @@ router.get("/me", userMiddleware, async (req, res) => {
         .status(404)
         .json({ message: "User not found", success: false });
     }
-    return res.json({
+    return res.status(200).json({
       message: "User data retrieved successfully",
       user,
       success: true,
@@ -97,15 +97,23 @@ router.patch("/", userMiddleware, async (req, res) => {
     const pass = await req.query.password;
 
     if (pass == "password") {
-      const hashedPassword = await hashPassword(password);
-      const updatedUser = await User.findByIdAndUpdate(
-        req.user._id,
-        { password: hashedPassword, ...res },
-        { new: true },
+      const currentuser = await User.findById(req.user.id);
+      const hashedPassword = await hashPassword(req.body.currentPassword);
+      const isMatch = await comparePassword(
+        req.body.currentPassword,
+        currentuser.password,
       );
-      return res.status(400).json({
-        message: "Current password is required to update user data",
-        success: false,
+      if (!isMatch) {
+        return res.status(400).json({
+          message: "Current password is incorrect",
+          success: false,
+        });
+      }
+
+      await currentuser.updateOne({ password: hashedPassword });
+      return res.status(200).json({
+        message: "Password updated successfully",
+        success: true,
       });
     }
     const updatedUser = await User.findByIdAndUpdate(
@@ -114,7 +122,7 @@ router.patch("/", userMiddleware, async (req, res) => {
       { new: true },
     );
 
-    return res.json({
+    return res.status(200).json({
       message: "User updated successfully",
       user: updatedUser,
       success: true,
@@ -132,7 +140,7 @@ router.delete("/", userMiddleware, async (req, res) => {
       { new: true },
     );
 
-    return res.json({
+    return res.status(200).json({
       message: "User deleted successfully",
       user: deletedUser,
       success: true,
