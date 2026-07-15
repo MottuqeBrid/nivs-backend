@@ -13,11 +13,11 @@ const fileSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    tags: [
-      {
-        type: String,
-      },
-    ],
+    tags: {
+      type: [String],
+      default: [],
+      set: (tags) => tags.map((tag) => tag.trim().toLowerCase()),
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

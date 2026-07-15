@@ -12,11 +12,11 @@ const imageSchema = new mongoose.Schema(
     alt: {
       type: String,
     },
-    tags: [
-      {
-        type: String,
-      },
-    ],
+    tags: {
+      type: [String],
+      default: [],
+      set: (tags) => tags.map((tag) => tag.trim().toLowerCase()),
+    },
     isDeleted: {
       type: Boolean,
       default: false,
